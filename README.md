@@ -18,3 +18,10 @@ Install plugins that perform the actual federation
 ```
 pip install git+https://github.com/mlmarius/eposfederatorradon.git
 ```
+
+# Run the app
+```
+python -m eposfederator.webapi run
+```
+
+access the service index on http://localhost:8888/services
