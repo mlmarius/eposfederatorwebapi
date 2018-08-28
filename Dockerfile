@@ -17,7 +17,6 @@ WORKDIR /home/epos/app
 USER epos
 RUN python3 -m virtualenv --system-site-packages venv &&\
     source ./venv/bin/activate &&\
-    pip install git+https://github.com/mlmarius/eposfederatorlibs.git && \
     pip install git+https://github.com/mlmarius/eposfederatorwebapi.git && \
     pip install git+https://github.com/mlmarius/eposfederatorradon.git
 
