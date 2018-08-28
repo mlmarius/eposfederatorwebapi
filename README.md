@@ -2,11 +2,6 @@
 EPOS federator service
 
 
-Install the basic libraries
-```
-pip install git+https://github.com/mlmarius/eposfederatorlibs.git
-```
-
 Install the main web api
 ```
 pip install git+https://github.com/mlmarius/eposfederatorwebapi.git
