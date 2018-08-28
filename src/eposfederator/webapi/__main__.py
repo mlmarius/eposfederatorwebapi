@@ -2,8 +2,6 @@ import tornado.ioloop
 import tornado.web
 import logging
 import signal
-import importlib
-import pkgutil
 import argparse
 from eposfederator.webapi.libs import config
 import os
@@ -46,6 +44,19 @@ def make_app(args): # noqa
         xsrf_cookies=True
     )
     handlers = [(f"{h.ROUTE}", h) for h in appbuilder.collect_handlers('eposfederator.webapi.handlers')]
+
+    for entrypoint in pkg_resources.iter_entry_points(group='eposfederator.federators'):
+        extension = entrypoint.load()
+        config.APPCONFIG['plugins'][extension.ID] = extension
+        config_path = pkg_resources.resource_filename(extension.__name__, 'settings.yml')
+        crt_config = config.load_yaml(config_path)
+        if crt_config['plugins'][extension.ID].get('is_active') is True:
+            config.USERCONFIG.update(crt_config)
+        handlers.extend(
+            [(f"{extension.BASE_ROUTE}/{handler.ROUTE}", handler) for handler in extension.HANDLERS]
+        )
+
+    '''
     plugins_module = 'eposfederator.plugins'
     plugins = importlib.import_module(plugins_module)
     # add handlers from all plugins
@@ -68,6 +79,7 @@ def make_app(args): # noqa
         handlers.extend(
             [(f"{plugin.BASE_ROUTE}/{handler.ROUTE}", handler) for handler in plugin.HANDLERS]
         )
+    '''
 
     # if user suplied custom config file, overwrite everything with user configs
     try:
@@ -79,10 +91,10 @@ def make_app(args): # noqa
         logging.info(f"Using config from {config_file}")
         config.update_config(config_file)
 
-    # logging.info("\n\n\n")
-    # logging.info(config.USERCONFIG)
-    # logging.info("\n\n\n")
-    # logging.info(config.APPCONFIG)
+    logging.info("\n\n\n")
+    logging.info(config.USERCONFIG)
+    logging.info("\n\n\n")
+    logging.info(config.APPCONFIG)
     for plugin_id, plugin in config.APPCONFIG['plugins'].items():
         logging.info(plugin.HANDLERS)
 
@@ -108,8 +120,8 @@ def make_app(args): # noqa
                         "url": backend_config.get('url'),
                         "handler": handler
                     })
+    logging.info("listing handlers")
     logging.info(handlers)
-
     return tornado.web.Application(handlers, **settings)
 
 

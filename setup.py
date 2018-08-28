@@ -18,14 +18,16 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='eposfederator.webapi',  # Required
+    name='eposfederator',  # Required
     version='0.0.1',  # Required
     description='Epos federator REST API',  # Required
     long_description=long_description,  # Optional
     package_dir={'': 'src'},
     packages=find_packages('src'),
-    namespace_packages=['eposfederator', 'eposfederator.plugins'],
-    install_requires=['tornado', 'webargs>=3.0.1', 'eposfederator.libs', 'ruamel.yaml', 'marshmallow_jsonschema'],
+    install_requires=[
+        'tornado', 'webargs>=3.0.1', 'ruamel.yaml', 'marshmallow_jsonschema',
+        'shapely', 'numpy', 'rtree', 'aiohttp', 'aiostream'
+    ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
 )
