@@ -92,16 +92,19 @@ def make_app(args): # noqa
         config.update_config(config_file)
 
     logging.info("\n\n\n")
+    logging.info("USERCONFIG")
     logging.info(config.USERCONFIG)
     logging.info("\n\n\n")
+    logging.info("APPCONFIG")
     logging.info(config.APPCONFIG)
     for plugin_id, plugin in config.APPCONFIG['plugins'].items():
         logging.info(plugin.HANDLERS)
 
     handler_map = {}
 
-    if hasattr(config.USERCONFIG, 'plugins'):
+    if 'plugins' in config.USERCONFIG:
         for plugin_id, plugin_config in config.USERCONFIG['plugins'].items():
+            logging.info(f"adding {plugin_id} to config")
             for endpoint_id, endpoint_config in plugin_config.get('endpoints', {}).items():
                 for backend_id, backend_config in endpoint_config.get('backends', {}).items():
                     key = (plugin_id, endpoint_id)
@@ -120,8 +123,8 @@ def make_app(args): # noqa
                         "url": backend_config.get('url'),
                         "handler": handler
                     })
-    logging.info("listing handlers")
-    logging.info(handlers)
+    else:
+        logging.info("no plugins found!!!")
     return tornado.web.Application(handlers, **settings)
 
 
