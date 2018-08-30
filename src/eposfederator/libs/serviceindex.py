@@ -12,7 +12,8 @@ class WebservicePointer(object):
                 Example: NIEP or INGV
             geometry (shapely.geometry): A geometry describing this NFO/Service
                 authoritative area
-            service_id (str): A unique string acting as ID for this service
+            service_id (str): An application level unique string acting as ID for this service
+                Example: query.vpvs, query.radon
             url(str): String to use as the url in order to access a particular service
                 from a particular NFO
 
@@ -75,5 +76,6 @@ def get(geometry=None, filter_func=None):
     if filter_func is None:
         return results
 
+    print(results)
     # return only results that satisfy the filter_func
     return [pointer for pointer in results if filter_func(pointer) is True]

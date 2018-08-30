@@ -17,7 +17,6 @@ def collect_handlernames(packagename):
 def collect_handlers(modulename):
     for submodulename in collect_handlernames(modulename):
         submodule = importlib.import_module(f"{modulename}.{submodulename}")
-        logger.info(submodule)
         for name, obj in inspect.getmembers(submodule, inspect.isclass):
             if hasattr(obj, 'ROUTE'):
                 yield obj

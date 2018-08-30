@@ -33,6 +33,17 @@ def do_stop(signum, frame):
     logging.warning('Exiting application')
     tornado.ioloop.IOLoop.instance().stop()
 
+def merge(source, destination):
+    '''deeply merge dictionaries'''
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            merge(value, node)
+        else:
+            destination[key] = value
+
+    return destination
 
 def make_app(args): # noqa
     settings = dict(
@@ -51,35 +62,12 @@ def make_app(args): # noqa
         config_path = pkg_resources.resource_filename(extension.__name__, 'settings.yml')
         crt_config = config.load_yaml(config_path)
         if crt_config['plugins'][extension.ID].get('is_active') is True:
-            config.USERCONFIG.update(crt_config)
+            config.USERCONFIG = merge(config.USERCONFIG, crt_config)
+        else:
+            logging.info(f"{extension.ID} is not ACTIVE !!!")
         handlers.extend(
             [(f"{extension.BASE_ROUTE}/{handler.ROUTE}", handler) for handler in extension.HANDLERS]
         )
-
-    '''
-    plugins_module = 'eposfederator.plugins'
-    plugins = importlib.import_module(plugins_module)
-    # add handlers from all plugins
-    logging.info("finding plugins")
-    for module_info in pkgutil.walk_packages(plugins.__path__):
-        if '.' in module_info.name:
-            continue
-        logging.info(f"will import {plugins_module}.{module_info.name} from {plugins.__path__}")
-        plugin = importlib.import_module(f"{plugins_module}.{module_info.name}")
-        config.APPCONFIG['plugins'][plugin.ID] = plugin
-
-        config_path = pkg_resources.resource_filename(f"{plugins_module}.{module_info.name}", 'settings.yml')
-        logging.info(config_path)
-
-        config_files = [os.path.join(pth, 'settings.yml') for pth in plugin.__path__]
-        for config_file in config_files:
-            crt_config = config.load_yaml(config_file)
-            if crt_config['plugins'][plugin.ID].get('is_active') is True:
-                config.USERCONFIG.update(crt_config)
-        handlers.extend(
-            [(f"{plugin.BASE_ROUTE}/{handler.ROUTE}", handler) for handler in plugin.HANDLERS]
-        )
-    '''
 
     # if user suplied custom config file, overwrite everything with user configs
     try:
@@ -91,20 +79,18 @@ def make_app(args): # noqa
         logging.info(f"Using config from {config_file}")
         config.update_config(config_file)
 
-    logging.info("\n\n\n")
-    logging.info("USERCONFIG")
-    logging.info(config.USERCONFIG)
-    logging.info("\n\n\n")
-    logging.info("APPCONFIG")
-    logging.info(config.APPCONFIG)
-    for plugin_id, plugin in config.APPCONFIG['plugins'].items():
-        logging.info(plugin.HANDLERS)
+    # logging.info("\n\n\n")
+    # logging.info("USERCONFIG")
+    # logging.info(config.USERCONFIG)
+    # logging.info("\n\n\n")
+    # logging.info("APPCONFIG")
+    # logging.info(config.APPCONFIG)
 
     handler_map = {}
 
     if 'plugins' in config.USERCONFIG:
         for plugin_id, plugin_config in config.USERCONFIG['plugins'].items():
-            logging.info(f"adding {plugin_id} to config")
+            logging.info(f"Adding {plugin_id} to config")
             for endpoint_id, endpoint_config in plugin_config.get('endpoints', {}).items():
                 for backend_id, backend_config in endpoint_config.get('backends', {}).items():
                     key = (plugin_id, endpoint_id)
@@ -119,12 +105,16 @@ def make_app(args): # noqa
                     serviceindex.add({
                         "nfo_id": backend_id,
                         "geometry": backend_config.get('geometry'),
-                        "service_id": endpoint_id,
+                        "service_id": f"{plugin_id}.{endpoint_id}",
                         "url": backend_config.get('url'),
                         "handler": handler
                     })
     else:
         logging.info("no plugins found!!!")
+
+    logging.info("REGISTERED SERVICES:")
+    for service in serviceindex.__SERVICES__:
+        logging.info(service)
     return tornado.web.Application(handlers, **settings)
 
 
