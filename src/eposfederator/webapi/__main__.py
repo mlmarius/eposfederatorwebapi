@@ -33,6 +33,7 @@ def do_stop(signum, frame):
     logging.warning('Exiting application')
     tornado.ioloop.IOLoop.instance().stop()
 
+
 def merge(source, destination):
     '''deeply merge dictionaries'''
     for key, value in source.items():
@@ -112,9 +113,11 @@ def make_app(args): # noqa
     else:
         logging.info("no plugins found!!!")
 
-    logging.info("REGISTERED SERVICES:")
+    logging.info("REGISTERED NODES:")
     for service in serviceindex.__SERVICES__:
         logging.info(service)
+
+    # logging.info(handlers)
     return tornado.web.Application(handlers, **settings)
 
 

@@ -53,11 +53,8 @@ async def fetch(url, **kwargs):
                 async with session.get(url) as resp:
                     try:
                         response_validator(resp)
-                        logger.info("validated the response")
                         async for batch in extractor(resp):
-                            logger.info("got response batch")
                             yield batch
-                            return
                     except Exception as e:
                         if resp.content_type.lower() == 'application/json':
                             yield DownloadError(
@@ -66,14 +63,24 @@ async def fetch(url, **kwargs):
                                 status=resp.status,
                                 response_text=json.loads(await(resp.text()))
                             )
+                        else:
+                            yield DownloadError(
+                                str(e),
+                                url,
+                                status=resp.status,
+                                response_text=resp.text()
+                            )
+                        logger.error("Error in extractor", exc_info=True)
                         return
             except Exception as e:
+                logger.error("Error while fetching request", exc_info=True)
                 yield DownloadError(str(e), url)
                 return
     except Exception as e:
+        logger.error("Error while fetching request", exc_info=True)
         yield DownloadError(str(e), url)
 
-    logger.info("download complete")
+    logger.info(f"download complete {url}")
 
 
 class DownloadManager(object):
@@ -88,8 +95,12 @@ class DownloadManager(object):
             async for chunk in chunks:
                 if isinstance(chunk, bytes):
                     yield chunk
+                elif isinstance(chunk, str):
+                    yield chunk
                 elif isinstance(chunk, Exception):
                     self.errors.append(chunk)
+                else:
+                    logger.warning("Could not yield chunk")
 
 
 async def merge(*iterators):
