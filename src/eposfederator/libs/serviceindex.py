@@ -76,6 +76,5 @@ def get(geometry=None, filter_func=None):
     if filter_func is None:
         return results
 
-    print(results)
     # return only results that satisfy the filter_func
     return [pointer for pointer in results if filter_func(pointer) is True]

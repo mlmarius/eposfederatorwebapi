@@ -28,6 +28,9 @@ class DownloadError(Exception):
             out['response_text'] = self.response_text
         return out
 
+    def __str__(self):
+        return f"\n====DOWNSTREAM ERROR START====\nHTTP STATUS: {self.status}\nURL: {self.url}\nRESPONSE: {self.response_text}\n====DOWNSTREAM ERROR END====".replace("\n", "\n    ")
+
     def to_json(self):
         return json.dumps(self.to_dict())
 
@@ -68,9 +71,9 @@ async def fetch(url, **kwargs):
                                 str(e),
                                 url,
                                 status=resp.status,
-                                response_text=resp.text()
+                                response_text=(await(resp.text()))
                             )
-                        logger.error("Error in extractor", exc_info=True)
+                        # logger.error("Error in extractor", exc_info=True)
                         return
             except Exception as e:
                 logger.error("Error while fetching request", exc_info=True)

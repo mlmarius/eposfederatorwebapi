@@ -91,7 +91,7 @@ def make_app(args): # noqa
 
     if 'plugins' in config.USERCONFIG:
         for plugin_id, plugin_config in config.USERCONFIG['plugins'].items():
-            logging.info(f"Adding {plugin_id} to config")
+            logging.info(f"Adding plugin {plugin_id} to config")
             for endpoint_id, endpoint_config in plugin_config.get('endpoints', {}).items():
                 for backend_id, backend_config in endpoint_config.get('backends', {}).items():
                     key = (plugin_id, endpoint_id)
@@ -114,7 +114,7 @@ def make_app(args): # noqa
         logging.info("no plugins found!!!")
 
     logging.info("REGISTERED NODES:")
-    for service in serviceindex.__SERVICES__:
+    for service in sorted(serviceindex.__SERVICES__, key=lambda x: (x.nfo_id, x.service_name)):
         logging.info(service)
 
     # logging.info(handlers)
@@ -134,6 +134,7 @@ def run_app(args):
     signal.signal(signal.SIGINT, sig_exit)
     app = make_app(args)
     app.listen(8888)
+    logging.info("Federator is now ready for requests")
     tornado.ioloop.IOLoop.current().start()
 
 
