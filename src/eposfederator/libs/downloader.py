@@ -54,6 +54,7 @@ async def fetch(url, **kwargs):
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
                 async with session.get(url) as resp:
+                    logger.info(dir(resp.raw_headers))
                     try:
                         response_validator(resp)
                         async for batch in extractor(resp):
@@ -96,9 +97,7 @@ class DownloadManager(object):
         gens = [fetch(url, **kwargs) for url in self._urls]
         async with stream.merge(*gens).stream() as chunks:
             async for chunk in chunks:
-                if isinstance(chunk, bytes):
-                    yield chunk
-                elif isinstance(chunk, str):
+                if isinstance(chunk, (bytes, str)):
                     yield chunk
                 elif isinstance(chunk, Exception):
                     self.errors.append(chunk)
