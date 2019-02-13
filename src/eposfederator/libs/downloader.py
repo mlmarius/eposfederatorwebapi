@@ -54,7 +54,6 @@ async def fetch(url, **kwargs):
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
                 async with session.get(url) as resp:
-                    logger.info(dir(resp.raw_headers))
                     try:
                         response_validator(resp)
                         async for batch in extractor(resp):

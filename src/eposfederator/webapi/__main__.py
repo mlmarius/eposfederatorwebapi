@@ -80,13 +80,6 @@ def make_app(args): # noqa
         logging.info(f"Using config from {config_file}")
         config.update_config(config_file)
 
-    # logging.info("\n\n\n")
-    # logging.info("USERCONFIG")
-    # logging.info(config.USERCONFIG)
-    # logging.info("\n\n\n")
-    # logging.info("APPCONFIG")
-    # logging.info(config.APPCONFIG)
-
     handler_map = {}
 
     if 'plugins' in config.USERCONFIG:
