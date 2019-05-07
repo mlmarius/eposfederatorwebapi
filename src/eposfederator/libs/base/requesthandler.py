@@ -42,7 +42,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
         else:
             fridge_authorization = self.request.headers.get('Fridge-Authorize', None)
-            if fridge_authorization != "FDerkaeriASFLK":
+            if fridge_authorization != "25623b53e0984428da972f4c635706d32d01ec92dcd2ab39066082e0b9488c9d":
                 raise tornado.web.HTTPError(403)
 
         logging.info("Response type should be {}".format(self.RESPONSE_TYPE))
